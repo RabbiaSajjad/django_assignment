@@ -1,1 +1,2 @@
 from .csv_upload_serializer import CSVFileUploadSerializer
+from .csv_query_serializer import CSVQuerySerializer

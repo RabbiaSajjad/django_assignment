@@ -1,6 +1,6 @@
-# csv_upload_view.py
 import csv
 import logging
+from datetime import datetime
 from django.db.utils import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
@@ -33,15 +33,27 @@ class CSVFileUploadView(APIView):
         with open(file_path, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-              try:
+                try:
+                    try:
+                        age = int(row['age'])
+                    except ValueError:
+                        age = 0
+
+                    try:
+                        date = datetime.strptime(row['date'], '%Y-%m-%d').date()
+                    except ValueError:
+                        date = ""
+
                     record, created = DataRecord.objects.get_or_create(
                         name=row['name'],
-                        age=row['age'],
-                        date=row['date'],
+                        age=age,
+                        date=date,
                     )
+
                     if created:
                         logger.debug(f'Record created: {record}')
                     else:
                         logger.warning(f'Record already exists: {record}')
-              except IntegrityError:
-                  logger.error(f'Integrity error for record: {row}')
+
+                except IntegrityError:
+                    logger.error(f'Integrity error for record: {row}')
